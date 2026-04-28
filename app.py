@@ -32,8 +32,9 @@ if uploaded_file:
     prominence = st.sidebar.slider("Peak Sensitivity (Prominence)", 0.0, float(df[val_col].max() * 0.5), 1.0)
     # 'distance' prevents the model from double-counting the same peak
     min_dist = st.sidebar.number_input("Min Distance (Data Points)", value=5)
-
-    ## --- The Detection Logic ---
+# Add this line before find_peaks to ensure data is numeric
+    df[val_col] = pd.to_numeric(df[val_col], errors='coerce')
+        ## --- The Detection Logic ---
     # Using find_peaks (the industry standard 'classic AI' approach)
     peaks, _ = find_peaks(df[val_col], prominence=prominence, distance=min_dist)
     
@@ -47,8 +48,7 @@ if uploaded_file:
                              marker=dict(color='red', size=10, symbol='x')))
     
     fig.update_layout(title="Signal Analysis", xaxis_title=time_col, yaxis_title=val_col)
-    st.plotly_chart(fig, use_container_with_width=True)
-
+    st.plotly_chart(fig, use_container_width=True)
     ## --- Table & Export ---
     st.subheader("📍 Detected Peak List")
     results = pd.DataFrame({
@@ -56,8 +56,7 @@ if uploaded_file:
         "Magnitude": peak_values
     }).reset_index(drop=True)
     
-    st.dataframe(results, use_container_with_width=True)
-    
+    st.dataframe(results, use_container_width=True)    
     csv_out = results.to_csv(index=False).encode('utf-8')
     st.download_button("Download Results", csv_out, "detected_peaks.csv", "text/csv")
 
